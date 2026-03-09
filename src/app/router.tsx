@@ -13,6 +13,7 @@ export default function Router() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<ChannelPage />} />
+          <Route path="/channel/:channelId" element={<ChannelPage />} />
         </Route>
       </Route>
     </Routes>
