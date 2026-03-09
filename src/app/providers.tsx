@@ -9,7 +9,9 @@ export default function Providers({ children }: { children: ReactNode }) {
   const initialize = useAuthStore((state) => state.initialize)
 
   useEffect(() => {
-    initialize()
+    let cleanup: (() => void) | undefined
+    initialize().then((fn) => { cleanup = fn })
+    return () => cleanup?.()
   }, [initialize])
 
   return (

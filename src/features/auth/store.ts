@@ -8,7 +8,7 @@ interface AuthStore {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
   signOut: () => Promise<void>;
-  initialize: () => Promise<void>;
+  initialize: () => Promise<() => void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -44,8 +44,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     } = await supabase.auth.getSession();
     set({ user: session?.user ?? null, isLoading: false });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       set({ user: session?.user ?? null });
     });
+
+    return () => subscription.unsubscribe();
   },
 }));
