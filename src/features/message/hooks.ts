@@ -20,9 +20,10 @@ export function useSendMessage(channelId: string) {
       await queryClient.cancelQueries({ queryKey: ['messages', channelId] })
 
       const previous = queryClient.getQueryData<Message[]>(['messages', channelId])
+      const optimisticId = `optimistic-${Date.now()}`
 
       const optimistic: Message = {
-        id: `optimistic-${Date.now()}`,
+        id: optimisticId,
         channel_id: channelId,
         user_id: '',
         content,
@@ -34,13 +35,14 @@ export function useSendMessage(channelId: string) {
         optimistic,
       ])
 
-      return { previous }
+      return { previous, optimisticId }
     },
 
     onError: (_err, _content, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(['messages', channelId], context.previous)
-      }
+      queryClient.setQueryData<Message[]>(
+        ['messages', channelId],
+        (old = []) => old.filter((m) => m.id !== context?.optimisticId),
+      )
     },
 
     onSettled: () => {
